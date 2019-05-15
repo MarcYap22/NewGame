@@ -46,14 +46,10 @@ public class Client {
     }
 
     /**
-     * Sends the playerAction String to the Server.
-     * The playerAction String contains instructions for player movement.
+     * playerActions = a string of booleans that corresponds to player movement
+     * PLAYER ACTIONS FORMAT: [movingUp] [movingDown] [movingLeft] [movingRight] [isFiring]
      *
-     * PLAYER ACTIONS FORMAT:   [movingUp] [movingDown] [movingLeft] [movingRight] [isFiring]
-     *
-     *  Player_Name <- string
-     *  rest <- boolean
-     *
+     * This class periodically sends playerActions to the Server.
      */
     class DataSender implements Runnable {
         StringBuilder playerActions = new StringBuilder();

@@ -105,13 +105,11 @@ class Server {
 
 
         /**
-         * Parses the string sent by the client, which contains playerActions
-         * and modifies the game state according to those playerActions.
          *
-         * PLAYER ACTIONS FORMAT:
-         *  [Player_Name] [up] [down] [left] [right] [fire]
+         * Parses playerActions, and modifies player movement based on retrieved data.
          *
-         *  Player_Name is a String, the rest are booleans.
+         * playerActions = a string of booleans that corresponds to player movement
+         * PLAYER ACTIONS FORMAT: [movingUp] [movingDown] [movingLeft] [movingRight] [isFiring]
          *
          * @param data String sent by the Client.
          */
@@ -162,12 +160,6 @@ class Server {
      * [enemy1_X] [enemy1_Y]
      * ...
      * [enemyN_X] [enemyN_Y]
-     *
-     * ENEMY_MISSILES
-     * [1] [K = number of missiles] [missile1_X] [missile1_Y] ... [missileK_X] [missileK_Y]
-     * [2] [K = number of missiles] [missile1_X] [missile1_Y] ... [missileK_X] [missileK_Y]
-     * ...
-     * [N] [K = number of missiles] [missile1_X] [missile1_Y] ... [missileK_X] [missileK_Y]
      *
      * STOP
      * ------------------------------------------------------------------------------------------------------------
