@@ -122,6 +122,45 @@ public class Client {
     }
 
 
+
+    /**
+     * Send the current game state to each of the clients every X milliseconds.
+     *
+     * GAME STATE FORMAT (full ver.)
+     * - without the extra newlines between dividers
+     * - the arguments in each line are separated with spaces
+     * ------------------------------------------------------------------------------------------------------------
+     *
+     * START
+     *
+     * PLAYERS
+     * [N = number of players]
+     * [player1_Name] [player1_X] [player1_Y]
+     * ...
+     * [playerN_Name] [playerN_X] [playerN_Y]
+     *
+     * PLAYER_MISSILES
+     * [player1_Name] [K = number of missiles] [missile1_X] [missile1_Y] ... [missileK_X] [missileK_Y]
+     * [player2_Name] [K = number of missiles] [missile1_X] [missile1_Y] ... [missileK_X] [missileK_Y]
+     *  ...
+     * [playerN_Name] [K = number of missiles] [missile1_X] [missile1_Y] ... [missileK_X] [missileK_Y]
+     *
+     * ENEMIES
+     * [N = number of enemies]
+     * [enemy1_X] [enemy1_Y]
+     * ...
+     * [enemyN_X] [enemyN_Y]
+     *
+     * ENEMY_MISSILES
+     * [1] [K = number of missiles] [missile1_X] [missile1_Y] ... [missileK_X] [missileK_Y]
+     * [2] [K = number of missiles] [missile1_X] [missile1_Y] ... [missileK_X] [missileK_Y]
+     * ...
+     * [N] [K = number of missiles] [missile1_X] [missile1_Y] ... [missileK_X] [missileK_Y]
+     *
+     * STOP
+     * ------------------------------------------------------------------------------------------------------------
+     */
+
     /**
      * Parses the data string and updates the game variables.
      *
@@ -151,10 +190,11 @@ public class Client {
         Scanner in = new Scanner(data);
         enemies.clear();
         players.clear();
+        int numPlayers = 0;
         while (in.hasNextLine()) {
             String line = in.nextLine();
             if (line.equals("PLAYERS")) {
-                int numPlayers = Integer.parseInt(in.nextLine());
+                numPlayers = Integer.parseInt(in.nextLine());
                 for (int i = 0; i < numPlayers; i++) {
                     var playerInfo = in.nextLine().split(" ");
                     String playerName = playerInfo[0];
@@ -169,6 +209,28 @@ public class Client {
                     player.setName(playerName);
                     players.add(player);
                 }
+            } else if(line.equals("PLAYER MISSILES")) {
+                for (int i = 0; i < numPlayers; i++) {
+                    var missilesLine = in.nextLine().split(" ");
+                    String playerName = missilesLine[0];
+                    int numMissiles = Integer.parseInt(missilesLine[1]);
+
+
+                    // add the missiles to the player
+                    if (numMissiles > 0) {
+                        for (Player p : players) {
+                            if (p.getName().equals(playerName)) {
+                                for (int j = 2; j < 2 + numMissiles * 2; j = j + 2) {
+                                    int missileX = Integer.parseInt(missilesLine[j]);
+                                    int missileY = Integer.parseInt(missilesLine[j + 1]);
+                                    p.addMissile(new Missile(missileX, missileY));
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+
             } else if (line.equals("ENEMIES")){
                 int numEnemies = Integer.parseInt(in.nextLine());
                 for (int i = 0; i < numEnemies; i++) {
@@ -181,6 +243,8 @@ public class Client {
                         Enemy e = new Enemy(enemyX, enemyY);
                         enemies.add(e);
                 }
+            } else if (line.equals("ENEMY MISSILES")) {
+                // todo
             }
         }
     }
@@ -215,14 +279,22 @@ public class Client {
                     public void keyPressed(KeyEvent e) {
                         int k = e.getKeyCode();
 
-                        if (k == KeyEvent.VK_W) {
-                            player.isMovingUp = true;
-                        } else if (k == KeyEvent.VK_A) {
-                            player.isMovingLeft = true;
-                        } else if (k == KeyEvent.VK_S) {
-                            player.isMovingDown = true;
-                        } else if (k == KeyEvent.VK_D) {
-                            player.isMovingRight = true;
+
+                        switch (k) {
+                            case KeyEvent.VK_W:
+                                player.isMovingUp = true;
+                                break;
+                            case KeyEvent.VK_A:
+                                player.isMovingLeft = true;
+                                break;
+                            case KeyEvent.VK_S:
+                                player.isMovingDown = true;
+                                break;
+                            case KeyEvent.VK_D:
+                                player.isMovingRight = true;
+                                break;
+                            case KeyEvent.VK_SPACE:
+                                player.isFiring = true;
                         }
                     }
 
@@ -231,14 +303,21 @@ public class Client {
                     public void keyReleased(KeyEvent e) {
                         int k = e.getKeyCode();
 
-                        if (k == KeyEvent.VK_W) {
-                            player.isMovingUp = false;
-                        } else if (k == KeyEvent.VK_A) {
-                            player.isMovingLeft = false;
-                        } else if (k == KeyEvent.VK_S) {
-                            player.isMovingDown = false;
-                        } else if (k == KeyEvent.VK_D) {
-                            player.isMovingRight = false;
+                        switch (k) {
+                            case KeyEvent.VK_W:
+                                player.isMovingUp = false;
+                                break;
+                            case KeyEvent.VK_A:
+                                player.isMovingLeft = false;
+                                break;
+                            case KeyEvent.VK_S:
+                                player.isMovingDown = false;
+                                break;
+                            case KeyEvent.VK_D:
+                                player.isMovingRight = false;
+                                break;
+                            case KeyEvent.VK_SPACE:
+                                player.isFiring = false;
                         }
                     }
                 });
@@ -288,15 +367,25 @@ public class Client {
             protected void paintComponent(Graphics g) {
                 // Draw everything in the game ArrayLists
                 Graphics2D g2d = (Graphics2D)g;
-                for (Player p: players) {
-                    g2d.drawImage(p.getImage(), p.getX(), p.getY(), this);
-                    g2d.setColor(Color.white);
-                    g2d.drawString(p.getName(), p.getX(), p.getY());
-                    g2d.setColor(Color.black);
+                g2d.setColor(Color.white);
+
+                if (players.size() > 0) {
+                    for (Player p : players) {
+
+                        for (Missile m: p.missiles) {
+                            g2d.drawImage(m.getImage(), m.getX(), m.getY(), this);
+                        }
+
+                        g2d.drawImage(p.getImage(), p.getX(), p.getY(), this);
+                        g2d.drawString(p.getName(), p.getX(), p.getY());
+                    }
+
+                    for (Enemy e : enemies) {
+                        g2d.drawImage(e.getImage(), e.getX(), e.getY(), this);
+                    }
                 }
-                for (Enemy e: enemies) {
-                    g2d.drawImage(e.getImage(), e.getX(), e.getY(), this);
-                }
+
+
             }
         }
 

@@ -1,7 +1,7 @@
 public class Enemy extends Sprite {
 
 
-    int dy = 10;
+    int dy = 5;
     int dx = 0;
 
 

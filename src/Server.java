@@ -6,16 +6,16 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.Executors;
 
 /**
- * Server Threads:
- * 1 thread for the game.
- * 1 thread for sending data.
- * 1 thread for each client (receiving data).
+ * 3 Main Threads:
+ *  1 thread for the game.
+ *  1 thread for sending data.
+ *  1 thread for each client (receiving data).
+ * * these threads may spawn more threads
+ *
  */
 class Server {
 
-    // todo randomly generate enemies that move down
-    // todo remove enemies when they go out of frame
-
+    // todo remove bullets that go oob
     private static boolean acceptingConnections = true;
     private static boolean gameRunning = true;
 
@@ -234,6 +234,38 @@ class Server {
         }
 
         // insert player missiles HERE
+        // todo test
+        gameState.append("PLAYER MISSILES\n");
+        for (Player p: players) {
+            var missiles = p.missiles;
+            gameState.append(p.getName());
+            gameState.append(" ");
+
+
+            int mSize = missiles.size();
+
+            gameState.append(mSize);
+
+            if (mSize > 0) {
+                gameState.append(" ");
+                for (int i = 0; i < mSize - 1; i++) {
+                    Missile m = missiles.get(i);
+                    gameState.append(m.getX());
+                    gameState.append(" ");
+                    gameState.append(m.getY());
+                    gameState.append(" ");
+                }
+
+                Missile m = missiles.get(mSize - 1);
+                gameState.append(m.getX());
+                gameState.append(" ");
+                gameState.append(m.getY());
+            }
+
+            gameState.append("\n");
+
+
+        }
 
         gameState.append("ENEMIES\n");
         gameState.append(enemies.size());
@@ -277,8 +309,10 @@ class Server {
          */
         private void timeStep() {
             for (Player p: players) {
-                p.firingCounter = (p.firingCounter + 1) % (p.firingRate + 1);
-                if (p.firingCounter == p.firingRate) p.fire();
+                if (p.isFiring) {
+                    p.firingCounter = (p.firingCounter + 1) % (p.firingRate + 1);
+                    if (p.firingCounter == p.firingRate) p.fire();
+                }
             }
 
             removeOutOfBoundsObjects();
@@ -286,8 +320,15 @@ class Server {
             enemyGenerationCounter = (enemyGenerationCounter + 1) % (enemyGenerationRate + 1);
 
             if (enemyGenerationCounter == enemyGenerationRate)  generateEnemy();
-            for (Enemy e: enemies) { e.move(); }
-            for (Player p: players) { p.move(); }
+            for (Enemy e: enemies) {
+                e.move();
+            }
+            for (Player p: players) {
+                p.move();
+                for (Missile m: p.missiles) {
+                    m.move();
+                }
+            }
 
             checkCollision();
         }
@@ -321,6 +362,9 @@ class Server {
     private void removeOutOfBoundsObjects() {
         int yBuffer = 100;
         enemies.removeIf(enemy -> enemy.getY() > Client.DEFAULT_HEIGHT + yBuffer);
+        for (Player p: players) {
+            p.missiles.removeIf(m -> m.getY() < -yBuffer);
+        }
     }
 
 

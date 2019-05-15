@@ -6,7 +6,7 @@ class Player extends Sprite {
 
     private String name;
 
-    int firingRate;
+    int firingRate = 100;
     int firingCounter;
 
     boolean isMovingUp;
@@ -56,8 +56,8 @@ class Player extends Sprite {
         missiles.add(new Missile(midX, y));
     }
 
-    void increaseFiringCounter (){
-        firingCounter = (firingCounter + 1) + (firingRate + 1);
+    void addMissile(Missile m) {
+        missiles.add(m);
     }
 
     void setName(String name) {
