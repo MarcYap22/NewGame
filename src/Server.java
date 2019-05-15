@@ -14,8 +14,6 @@ import java.util.concurrent.Executors;
  *
  */
 class Server {
-
-    // todo remove bullets that go oob
     private static boolean acceptingConnections = true;
     private static boolean gameRunning = true;
 
@@ -172,6 +170,8 @@ class Server {
      *
      * STOP
      * ------------------------------------------------------------------------------------------------------------
+     *
+     * todo enemy missiles? Special enemies?
      */
     class DataSender implements Runnable {
         @Override
@@ -193,36 +193,16 @@ class Server {
 
 
     /**
-     * Updates the game string
-     *
-     * TEST FORMAT (Simpler form without missiles)
-     * - without the extra newlines
-     * - separated with spaces
-     *
-     *
-     * START
-     *
-     * PLAYERS
-     * [N = number of players]
-     * [player1_Name] [player1_X] [player1_Y]
-     * ...
-     * [playerN_Name] [playerN_X] [playerN_Y]
-     *
-     * ENEMIES
-     * [N = number of enemies]
-     * [enemy1_X] [enemy1_Y]
-     * ...
-     * [enemyN_X] [enemy2_Y]
-     *
-     * STOP
+     * Updates the gameState String
      */
     private void updateGameStateData() {
         gameState = new StringBuilder();
+
         gameState.append("START\n");
+
         gameState.append("PLAYERS\n");
         gameState.append(players.size());
         gameState.append("\n");
-
 
         for (Player p: players) {
             gameState.append(p.getName());
@@ -233,8 +213,6 @@ class Server {
             gameState.append("\n");
         }
 
-        // insert player missiles HERE
-        // todo test
         gameState.append("PLAYER MISSILES\n");
         for (Player p: players) {
             var missiles = p.missiles;
@@ -263,8 +241,6 @@ class Server {
             }
 
             gameState.append("\n");
-
-
         }
 
         gameState.append("ENEMIES\n");
@@ -276,8 +252,6 @@ class Server {
             gameState.append(e.getY());
             gameState.append("\n");
         }
-
-        // insert enemy missiles HERE
 
         gameState.append("STOP\n");
     }
@@ -348,11 +322,8 @@ class Server {
     }
 
 
-    /**
-     * todo
-     */
     private void checkCollision() {
-
+        // todo
     }
 
 

@@ -23,14 +23,15 @@ public class Client {
     private String name;
     private Player player;
 
-    // Game lists to mirror those in the Server
     private CopyOnWriteArrayList<Player> players = new CopyOnWriteArrayList<>();
     private CopyOnWriteArrayList<Enemy> enemies = new CopyOnWriteArrayList<>();
 
+    /**
+     * Connects to the server,
+     * instantiates the IO streams,
+     * then starts the sender and receiver threads.
+     */
     private Client() {
-        // Connect to the server,
-        // instantiate the IO streams,
-        // then start the sender and receiver threads
         try {
             socket = new Socket(HOST_NAME, PORT_NUM);
             System.out.println("successfully connected to : " + socket.getRemoteSocketAddress());
@@ -45,13 +46,13 @@ public class Client {
     }
 
     /**
-     * Sends the playerActions to the Server.
+     * Sends the playerAction String to the Server.
+     * The playerAction String contains instructions for player movement.
      *
-     * PLAYER ACTIONS FORMAT:
+     * PLAYER ACTIONS FORMAT:   [movingUp] [movingDown] [movingLeft] [movingRight] [isFiring]
      *
-     *  [Player_Name] [up] [down] [left] [right] [fire]
-     *
-     *  Player_Name is a String, the rest are booleans.
+     *  Player_Name <- string
+     *  rest <- boolean
      *
      */
     class DataSender implements Runnable {
@@ -72,10 +73,6 @@ public class Client {
 
         }
 
-        /*
-         Always start by sending the name
-         Then just keep sending the playerActions
-          */
         @Override
         public void run() {
             try {
@@ -97,7 +94,8 @@ public class Client {
     }
 
     /**
-     * Receives data from the Server and processes it
+     * Periodically receives data from the Server and processes it
+     * todo thread scheduling?
      */
     class DataReceiver implements Runnable {
         @Override
@@ -151,40 +149,8 @@ public class Client {
      * ...
      * [enemyN_X] [enemyN_Y]
      *
-     * ENEMY_MISSILES
-     * [1] [K = number of missiles] [missile1_X] [missile1_Y] ... [missileK_X] [missileK_Y]
-     * [2] [K = number of missiles] [missile1_X] [missile1_Y] ... [missileK_X] [missileK_Y]
-     * ...
-     * [N] [K = number of missiles] [missile1_X] [missile1_Y] ... [missileK_X] [missileK_Y]
-     *
      * STOP
      * ------------------------------------------------------------------------------------------------------------
-     */
-
-    /**
-     * Parses the data string and updates the game variables.
-     *
-     * TEST FORMAT (without missiles)
-     * - without the extra newlines
-     * - separated with spaces
-     *
-     * START
-     *
-     * PLAYERS
-     * [N = number of players]
-     * [player1_Name] [player1_X] [player1_Y]
-     * ...
-     * [playerN_Name] [playerN_X] [playerN_Y]
-     *
-     * ENEMIES
-     * [N = number of enemies]
-     * [enemy1_X] [enemy1_Y]
-     * ...
-     * [enemyN_X] [enemy2_Y]
-     *
-     * STOP
-     *
-     * @param data String that contains the game state.
      */
     private void processData(String data) {
         Scanner in = new Scanner(data);
@@ -243,9 +209,7 @@ public class Client {
                         Enemy e = new Enemy(enemyX, enemyY);
                         enemies.add(e);
                 }
-            } else if (line.equals("ENEMY MISSILES")) {
-                // todo
-            }
+            } // if "END", just ignore
         }
     }
     
@@ -279,7 +243,6 @@ public class Client {
                     public void keyPressed(KeyEvent e) {
                         int k = e.getKeyCode();
 
-
                         switch (k) {
                             case KeyEvent.VK_W:
                                 player.isMovingUp = true;
@@ -297,7 +260,6 @@ public class Client {
                                 player.isFiring = true;
                         }
                     }
-
 
                     @Override
                     public void keyReleased(KeyEvent e) {
@@ -337,9 +299,17 @@ public class Client {
                 sender.start();
                 receiving.start();
 
-                // start the game
+                // this loop:
+                // moves objects (to hide latency)
+                // repaints
                 while (true) {
-                    moveObjects();
+                    for (Player p: players) {
+                        p.move();
+                    }
+                    for (Enemy e: enemies) {
+                        e.move();
+                    }
+                    repaint();
                     try {
                         Thread.sleep(GAME_DELAY);
 
@@ -348,18 +318,6 @@ public class Client {
                     }
                 }
 
-            }
-
-            void moveObjects() {
-                for (Player p: players) {
-                    p.move();
-                }
-
-                for (Enemy e: enemies) {
-                    e.move();
-                }
-
-                repaint();
             }
 
 
@@ -371,24 +329,18 @@ public class Client {
 
                 if (players.size() > 0) {
                     for (Player p : players) {
-
                         for (Missile m: p.missiles) {
                             g2d.drawImage(m.getImage(), m.getX(), m.getY(), this);
                         }
-
                         g2d.drawImage(p.getImage(), p.getX(), p.getY(), this);
                         g2d.drawString(p.getName(), p.getX(), p.getY());
                     }
-
                     for (Enemy e : enemies) {
                         g2d.drawImage(e.getImage(), e.getX(), e.getY(), this);
                     }
                 }
-
-
             }
         }
-
     }
 
     public static void main(String[] args) {
