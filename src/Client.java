@@ -290,8 +290,7 @@ public class Client {
                 receiving.start();
 
                 // this loop:
-                // moves objects (to hide latency)
-                // repaints
+                // moves objects (to hide latency & repaints
                 while (true) {
                     for (Player p: players) {
                         p.move();

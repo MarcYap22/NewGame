@@ -2,7 +2,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 class Player extends Sprite {
 
-    CopyOnWriteArrayList<Missile> missiles = new CopyOnWriteArrayList<>();
 
     private String name;
 
@@ -17,6 +16,8 @@ class Player extends Sprite {
     boolean isFiring;
 
     private int speed = 10;
+
+    CopyOnWriteArrayList<Missile> missiles = new CopyOnWriteArrayList<>();
 
     Player (int x, int y) {
         super(x, y);
