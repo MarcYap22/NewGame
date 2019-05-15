@@ -6,7 +6,7 @@ class Player extends Sprite {
 
     private String name;
 
-    int firingRate = 100;
+    int firingRate = 20; // number of ticks between firing
     int firingCounter;
 
     boolean isMovingUp;

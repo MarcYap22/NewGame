@@ -1,5 +1,6 @@
 class Missile extends Sprite {
     int dy = -10;
+    int dx = 0;
 
     Missile(int x, int y) {
         super(x, y);
@@ -10,6 +11,7 @@ class Missile extends Sprite {
 
     void move() {
         y += dy;
+        x += dx;
     }
 
 
