@@ -175,7 +175,6 @@ public class Client {
                     String playerName = missilesLine[0];
                     int numMissiles = Integer.parseInt(missilesLine[1]);
 
-
                     // add the missiles to the player
                     if (numMissiles > 0) {
                         for (Player p : players) {
@@ -190,7 +189,6 @@ public class Client {
                         }
                     }
                 }
-
             } else if (line.equals("ENEMIES")){
                 int numEnemies = Integer.parseInt(in.nextLine());
                 for (int i = 0; i < numEnemies; i++) {
@@ -198,10 +196,8 @@ public class Client {
                     int enemyX = Integer.parseInt(enemyInfo[0]);
                     int enemyY = Integer.parseInt(enemyInfo[1]);
 
-                    // Update the enemy in the ArrayList
-                    // If the enemy doesn't exist, add a new one
-                        Enemy e = new Enemy(enemyX, enemyY);
-                        enemies.add(e);
+                    Enemy e = new Enemy(enemyX, enemyY);
+                    enemies.add(e);
                 }
             } // if "END", just ignore
         }
