@@ -50,7 +50,6 @@ class Player extends Sprite {
         y += dy;
     }
 
-
     void fire() {
         int midX = x + width/2;
         missiles.add(new Missile(midX, y));

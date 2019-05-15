@@ -115,8 +115,6 @@ public class Client {
         }
     }
 
-
-
     /**
      * Send the current game state to each of the clients every X milliseconds.
      *

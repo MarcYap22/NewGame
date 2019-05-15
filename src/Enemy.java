@@ -1,9 +1,7 @@
 public class Enemy extends Sprite {
 
-
     int dy = 5;
     int dx = 0;
-
 
     Enemy(int x, int y) {
         super(x, y);
@@ -11,7 +9,6 @@ public class Enemy extends Sprite {
         loadImage(FILENAME);
         loadImageDimensions();
     }
-
 
     void move() {
         x += dx;

@@ -18,12 +18,10 @@ class Server {
     private static boolean acceptingConnections = true;
     private static boolean gameRunning = true;
 
-
     private StringBuilder gameState = new StringBuilder();  // the state of each object in the game is encoded in one long string.
 
     private static final int SEND_DELAY = 10;
     private static final int GAME_DELAY = 20;
-
 
     private int enemyGenerationRate = 50;  // number of frames before a new enemy is generated.
     private int enemyGenerationCounter = 0;  // the current frame
@@ -43,7 +41,7 @@ class Server {
     }
 
 
-    // Start the DataSender and Game threads.
+    // Starts the DataSender and Game threads.
     private Server() {
         var ds = new Thread(new DataSender());
         var game = new Thread(new Game());
@@ -54,8 +52,8 @@ class Server {
 
 
     /**
-     * Handler:
-     * receives data from the client.
+     * Receives data from the client.
+     * 1 Handler per Client.
      */
     static class Handler implements Runnable {
         Socket socket;
@@ -68,7 +66,6 @@ class Server {
             this.socket = socket;
         }
 
-        // Keep receiving data from the client.
         @Override
         public void run() {
             try {
@@ -102,10 +99,7 @@ class Server {
             }
         }
 
-
-
         /**
-         *
          * Parses playerActions, and modifies player movement based on retrieved data.
          *
          * playerActions = a string of booleans that corresponds to player movement
@@ -130,15 +124,13 @@ class Server {
         }
     }
 
-
-
-
     /**
      * Send the current game state to each of the clients every X milliseconds.
      *
      * GAME STATE FORMAT (full ver.)
-     * - without the extra newlines between dividers
-     * - the arguments in each line are separated with spaces
+     * note:
+     *  > the arguments in each line are separated with spaces
+     *  > no extra newlines (\n)
      * ------------------------------------------------------------------------------------------------------------
      *
      * START
@@ -172,7 +164,7 @@ class Server {
             while (gameRunning) {
                 try {
                     Thread.sleep(SEND_DELAY);
-                    updateGameStateData();
+                    updateGameStateString();
                     for (BufferedWriter w : clients) {
                         w.write(gameState.toString());
                         w.flush();
@@ -184,11 +176,10 @@ class Server {
         }
     }
 
-
     /**
      * Updates the gameState String
      */
-    private void updateGameStateData() {
+    private void updateGameStateString() {
         gameState = new StringBuilder();
 
         gameState.append("START\n");
@@ -211,7 +202,6 @@ class Server {
             var missiles = p.missiles;
             gameState.append(p.getName());
             gameState.append(" ");
-
 
             int mSize = missiles.size();
 
@@ -267,7 +257,6 @@ class Server {
             }
         }
 
-
         /**
          * Updates the game variables,
          *  - collision detection
@@ -285,7 +274,6 @@ class Server {
             removeOutOfBoundsObjects();
 
             enemyGenerationCounter = (enemyGenerationCounter + 1) % (enemyGenerationRate + 1);
-
             if (enemyGenerationCounter == enemyGenerationRate)  generateEnemy();
             for (Enemy e: enemies) {
                 e.move();
@@ -314,11 +302,9 @@ class Server {
         enemies.add(new Enemy(x, y));
     }
 
-
     private void checkCollision() {
         // todo
     }
-
 
     /**
      * Removes enemies and missiles that have left the play-area

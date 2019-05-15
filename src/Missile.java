@@ -14,6 +14,5 @@ class Missile extends Sprite {
         x += dx;
     }
 
-
     private static final String FILENAME = "missile.png";
 }
