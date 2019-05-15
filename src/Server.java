@@ -10,7 +10,8 @@ import java.util.concurrent.Executors;
  *  1 thread for the game.
  *  1 thread for sending data.
  *  1 thread for each client (receiving data).
- * * these threads may spawn more threads
+ *
+ * note: these threads may spawn more threads
  *
  */
 class Server {
