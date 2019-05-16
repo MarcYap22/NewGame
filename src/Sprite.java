@@ -21,23 +21,28 @@ public class Sprite {
         height = image.getHeight(null);
     }
 
-    public Image getImage() {
+    Image getImage() {
         return image;
     }
 
-    public int getWidth() {
+    int getWidth() {
         return width;
     }
 
-    public int getHeight() {
+    int getHeight() {
         return height;
     }
 
-    public int getX() {
+    int getX() {
         return x;
     }
 
-    public int getY() {
+    int getY() {
         return y;
     }
+
+    Rectangle getBounds() {
+        return new Rectangle(x, y, width, height);
+    }
+
 }

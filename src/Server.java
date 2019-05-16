@@ -21,9 +21,9 @@ class Server {
     private StringBuilder gameState = new StringBuilder();  // the state of each object in the game is encoded in one long string.
 
     private static final int SEND_DELAY = 10;
-    private static final int GAME_DELAY = 20;
+    private static final int GAME_DELAY = 15;
 
-    private int enemyGenerationRate = 50;  // number of frames before a new enemy is generated.
+    private int enemyGenerationRate = 100;  // number of frames before a new enemy is generated.
     private int enemyGenerationCounter = 0;  // the current frame
 
     private static CopyOnWriteArraySet<BufferedWriter> clients = new CopyOnWriteArraySet<>();
@@ -39,7 +39,6 @@ class Server {
             }
         }
     }
-
 
     // Starts the DataSender and Game threads.
     private Server() {
@@ -82,13 +81,14 @@ class Server {
                 System.out.println(name + " has joined the server.");
                 clients.add(out);
 
-                player = new Player(0, 0);
+                player = new Player(Client.PLAYER_START_X, Client.PLAYER_START_Y);
                 player.setName(name);
                 players.add(player);
 
                 String line;
                 while ((line = in.readLine()) != null) {
                     processData(line);
+                    // todo Client sends a gameOver flag. Remove the client from the list.
                 }
             } catch (IOException e) {
                 System.out.println("Socket disconnected.");
@@ -108,19 +108,24 @@ class Server {
          * @param data String sent by the Client.
          */
         private void processData(String data) {
-            var args = data.split(" ");
-            boolean up = Boolean.valueOf(args[0]);
-            boolean down = Boolean.valueOf(args[1]);
-            boolean left = Boolean.valueOf(args[2]);
-            boolean right = Boolean.valueOf(args[3]);
-            boolean fire = Boolean.valueOf(args[4]);
+            if (data.equals("DISCONNECT")) {
+                clients.remove(player);
+            }
+            else {
+                var args = data.split(" ");
+                boolean up = Boolean.valueOf(args[0]);
+                boolean down = Boolean.valueOf(args[1]);
+                boolean left = Boolean.valueOf(args[2]);
+                boolean right = Boolean.valueOf(args[3]);
+                boolean fire = Boolean.valueOf(args[4]);
 
-            player.isMovingDown = down;
-            player.isMovingUp = up;
-            player.isMovingRight = right;
-            player.isMovingLeft = left;
-            player.isFiring = fire;
+                player.isMovingDown = down;
+                player.isMovingUp = up;
+                player.isMovingRight = right;
+                player.isMovingLeft = left;
+                player.isFiring = fire;
 
+            }
         }
     }
 
@@ -303,7 +308,22 @@ class Server {
     }
 
     private void checkCollision() {
-        // todo
+        // Player and Enemy
+        for (Enemy e: enemies) {
+            players.removeIf(p -> p.getBounds().intersects(e.getBounds()));
+        }
+
+        // Enemy and Missile
+        for (Player p: players) {
+            for (Missile m: p.missiles) {
+                for (Enemy e: enemies) {
+                    if (e.getBounds().intersects(m.getBounds())) {
+                        enemies.remove(e);
+                        p.missiles.remove(m);
+                    }
+                }
+            }
+        }
     }
 
     /**

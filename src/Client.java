@@ -1,3 +1,4 @@
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
@@ -14,10 +15,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
  *  3 - displays the game
  */
 public class Client {
+    // todo check if the player is stil in the list. if it's not, then end game.
     private Socket socket;
     private BufferedWriter out;
     private BufferedReader in;
-    private static final int SEND_DELAY = 20;
+    private static final int SEND_DELAY = 15;
     private static final int RECEIVE_DELAY = 10;
 
     private String name;
@@ -25,6 +27,8 @@ public class Client {
 
     private CopyOnWriteArrayList<Player> players = new CopyOnWriteArrayList<>();
     private CopyOnWriteArrayList<Enemy> enemies = new CopyOnWriteArrayList<>();
+
+    private boolean gameOver = false;
 
     /**
      * Connects to the server,
@@ -66,7 +70,6 @@ public class Client {
             playerActions.append(" ");
             playerActions.append(player.isFiring);
             playerActions.append("\n");
-
         }
 
         @Override
@@ -78,9 +81,14 @@ public class Client {
                 System.out.println("name sent");
                 while (true) {
                     Thread.sleep(SEND_DELAY);
-                    getPlayerActions();
-                    out.write(playerActions.toString());
-                    out.flush();
+                    if (gameOver) {
+                        out.write("DISCONNECT");
+                        out.flush();
+                    } else {
+                        getPlayerActions();
+                        out.write(playerActions.toString());
+                        out.flush();
+                    }
                     playerActions.delete(0, playerActions.length());
                 }
             } catch (Exception e) {
@@ -168,6 +176,20 @@ public class Client {
                     Player player = new Player(playerX, playerY);
                     player.setName(playerName);
                     players.add(player);
+                }
+
+                // if player isn't there anymore, GAME OVER..
+                boolean inGame = false;
+                for (Player p: players) {
+                    if (p.getName().equals(name)) {
+                        inGame = true;
+                        break;
+                    }
+                }
+
+                if (!inGame) {
+                    gameOver = true;
+                    break;
                 }
             } else if(line.equals("PLAYER MISSILES")) {
                 for (int i = 0; i < numPlayers; i++) {
@@ -298,7 +320,15 @@ public class Client {
                     for (Enemy e: enemies) {
                         e.move();
                     }
-                    repaint();
+
+                    if (players.size() > 0) {
+                        repaint();
+                    }
+                    if (gameOver) {
+                        repaint();
+                        break;
+                    }
+
                     try {
                         Thread.sleep(GAME_DELAY);
 
@@ -316,17 +346,23 @@ public class Client {
                 Graphics2D g2d = (Graphics2D)g;
                 g2d.setColor(Color.white);
 
-                if (players.size() > 0) {
-                    for (Player p : players) {
-                        for (Missile m: p.missiles) {
-                            g2d.drawImage(m.getImage(), m.getX(), m.getY(), this);
-                        }
-                        g2d.drawImage(p.getImage(), p.getX(), p.getY(), this);
-                        g2d.drawString(p.getName(), p.getX(), p.getY());
+                for (Player p : players) {
+                    for (Missile m: p.missiles) {
+                        g2d.drawImage(m.getImage(), m.getX(), m.getY(), this);
                     }
-                    for (Enemy e : enemies) {
-                        g2d.drawImage(e.getImage(), e.getX(), e.getY(), this);
-                    }
+                    g2d.drawImage(p.getImage(), p.getX(), p.getY(), this);
+                    g2d.drawString(p.getName(), p.getX(), p.getY());
+                }
+                for (Enemy e : enemies) {
+                    g2d.drawImage(e.getImage(), e.getX(), e.getY(), this);
+                }
+
+                if (gameOver) {
+                    String gameOverMsg = "GAME OVER";
+                    Font f = new Font("Arial", Font.BOLD, 20);
+                    g2d.setFont(f);
+                    int stringWidth = g2d.getFontMetrics(f).stringWidth(gameOverMsg);
+                    g2d.drawString(gameOverMsg,DEFAULT_WIDTH/2 - stringWidth/2, DEFAULT_HEIGHT/2);
                 }
             }
         }
@@ -340,6 +376,6 @@ public class Client {
     static final int DEFAULT_HEIGHT = 600;
     private static final String HOST_NAME = "localhost";
     private static final int PORT_NUM = 6969;
-    private static final int PLAYER_START_X = 0;
-    private static final int PLAYER_START_Y = 0;
+    static final int PLAYER_START_X = DEFAULT_WIDTH/2;
+    static final int PLAYER_START_Y = DEFAULT_HEIGHT - 100;
 }
