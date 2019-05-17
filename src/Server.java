@@ -318,9 +318,18 @@ class Server {
 
         private void checkCollision() {
             // Player and Enemy
-            for (Enemy e : enemies) {
-                players.removeIf(p -> p.getBounds().intersects(e.getBounds()));
+            for (Enemy e: enemies) {
+                for (Player p: players) {
+                    if (e.getBounds().intersects(p.getBounds())) {
+                        // remove enemy and decrease player hp
+                        p.health--;
+                        enemies.remove(e);
+                    }
+                }
             }
+
+            // check if player hp is positive
+            players.removeIf(p -> !p.isAlive());
 
             // Enemy and Missile
             for (Player p : players) {

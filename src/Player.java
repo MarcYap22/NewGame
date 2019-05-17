@@ -17,6 +17,8 @@ class Player extends Sprite {
 
     private int speed = 10;
 
+    int health = 3;
+
     CopyOnWriteArrayList<Missile> missiles = new CopyOnWriteArrayList<>();
 
     Player (int x, int y) {
@@ -54,6 +56,14 @@ class Player extends Sprite {
     void fire() {
         int midX = x + width/2;
         missiles.add(new Missile(midX, y));
+    }
+
+    /**
+     * Check if health is positive
+     * @return
+     */
+    boolean isAlive() {
+        return health > 0;
     }
 
     void addMissile(Missile m) {
