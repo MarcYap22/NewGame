@@ -178,6 +178,7 @@ public class Client {
                     players.add(player);
                 }
 
+                // todo fix this. sometimes it bugs at start
                 // if player isn't there anymore, GAME OVER..
                 boolean inGame = false;
                 for (Player p: players) {

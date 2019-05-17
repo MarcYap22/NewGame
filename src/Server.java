@@ -15,6 +15,16 @@ import java.util.concurrent.Executors;
  *
  */
 class Server {
+
+    // todo FEATRUES:
+    // game lobby
+    // player hp
+    // increasing spawn rate
+    // level system
+    // hp bar
+    // shooting chargeup
+    // hit effect
+
     private static boolean acceptingConnections = true;
     private static boolean gameRunning = true;
 
@@ -264,12 +274,12 @@ class Server {
 
         /**
          * Updates the game variables,
-         *  - collision detection
-         *  - moves the objects
-         *
+         * - collision detection
+         * - moves the objects
          */
         private void timeStep() {
-            for (Player p: players) {
+
+            for (Player p : players) {
                 if (p.isFiring) {
                     p.firingCounter = (p.firingCounter + 1) % (p.firingRate + 1);
                     if (p.firingCounter == p.firingRate) p.fire();
@@ -279,61 +289,61 @@ class Server {
             removeOutOfBoundsObjects();
 
             enemyGenerationCounter = (enemyGenerationCounter + 1) % (enemyGenerationRate + 1);
-            if (enemyGenerationCounter == enemyGenerationRate)  generateEnemy();
-            for (Enemy e: enemies) {
+            if (enemyGenerationCounter == enemyGenerationRate) generateEnemy();
+            for (Enemy e : enemies) {
                 e.move();
             }
-            for (Player p: players) {
+            for (Player p : players) {
                 p.move();
-                for (Missile m: p.missiles) {
+                for (Missile m : p.missiles) {
                     m.move();
                 }
             }
 
             checkCollision();
         }
-    }
 
-    /**
-     * Adds a new enemy to the arrayList.
-     * New Enemy:
-     *      0 < x < DEFAULT_WIDTH
-     *      y < 0
-     */
-    private void generateEnemy() {
-        int x = (int) (Math.random() * 1000) % Client.DEFAULT_WIDTH;
-        int y = -100;
+        /**
+         * Adds a new enemy to the arrayList.
+         * New Enemy:
+         * 0 < x < DEFAULT_WIDTH
+         * y < 0
+         */
+        private void generateEnemy() {
+            int x = (int) (Math.random() * 1000) % Client.DEFAULT_WIDTH;
+            int y = -100;
 
-        enemies.add(new Enemy(x, y));
-    }
-
-    private void checkCollision() {
-        // Player and Enemy
-        for (Enemy e: enemies) {
-            players.removeIf(p -> p.getBounds().intersects(e.getBounds()));
+            enemies.add(new Enemy(x, y));
         }
 
-        // Enemy and Missile
-        for (Player p: players) {
-            for (Missile m: p.missiles) {
-                for (Enemy e: enemies) {
-                    if (e.getBounds().intersects(m.getBounds())) {
-                        enemies.remove(e);
-                        p.missiles.remove(m);
+        private void checkCollision() {
+            // Player and Enemy
+            for (Enemy e : enemies) {
+                players.removeIf(p -> p.getBounds().intersects(e.getBounds()));
+            }
+
+            // Enemy and Missile
+            for (Player p : players) {
+                for (Missile m : p.missiles) {
+                    for (Enemy e : enemies) {
+                        if (e.getBounds().intersects(m.getBounds())) {
+                            enemies.remove(e);
+                            p.missiles.remove(m);
+                        }
                     }
                 }
             }
         }
-    }
 
-    /**
-     * Removes enemies and missiles that have left the play-area
-     */
-    private void removeOutOfBoundsObjects() {
-        int yBuffer = 100;
-        enemies.removeIf(enemy -> enemy.getY() > Client.DEFAULT_HEIGHT + yBuffer);
-        for (Player p: players) {
-            p.missiles.removeIf(m -> m.getY() < -yBuffer);
+        /**
+         * Removes enemies and missiles that have left the play-area
+         */
+        private void removeOutOfBoundsObjects() {
+            int yBuffer = 50; // todo adjust?
+            enemies.removeIf(enemy -> enemy.getY() > Client.DEFAULT_HEIGHT + yBuffer);
+            for (Player p : players) {
+                p.missiles.removeIf(m -> m.getY() < -yBuffer);
+            }
         }
     }
 
